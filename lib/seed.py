@@ -1,27 +1,38 @@
-#!/usr/bin/env python3
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from models import Base, Dev, Company
+from models import Freebie 
 
-from your_app import app, db
-from models import Dev, Company, Freebie
+# Replace with your database URI
+engine = create_engine('sqlite:///freebies.db')  # or 'postgresql://user:pass@localhost/dbname'
+Session = sessionmaker(bind=engine)
+session = Session()
 
-with app.app_context():
-    db.drop_all()
-    db.create_all()
+# Drop and recreate all tables
+Base.metadata.drop_all(engine)
+Base.metadata.create_all(engine)
 
-    # Create devs and companies
-    dev1 = Dev(name="Alice")
-    dev2 = Dev(name="Bob")
+# Create Companies
+company1 = Company(name="TechCorp", founding_year=2000)
+company2 = Company(name="InnovateX", founding_year=1995)
 
-    company1 = Company(name="TechCorp")
-    company2 = Company(name="InnovateX")
+# Create Devs
+dev1 = Dev(name="Alice")
+dev2 = Dev(name="Bob")
+dev3 = Dev(name="Charlie")
 
-    db.session.add_all([dev1, dev2, company1, company2])
-    db.session.commit()
+# Add them to the session
+session.add_all([company1, company2, dev1, dev2, dev3])
+session.commit()
 
-    # Create freebies
-    freebie1 = Freebie(item_name="Sticker Pack", value=5, dev_id=dev1.id, company_id=company1.id)
-    freebie2 = Freebie(item_name="T-Shirt", value=20, dev_id=dev2.id, company_id=company2.id)
+# Use give_freebie and commit each one
+freebie1 = company1.give_freebie(dev1, item_name="T-Shirt", value=25)
+freebie2 = company1.give_freebie(dev2, item_name="Water Bottle", value=15)
+freebie3 = company2.give_freebie(dev1, item_name="Sticker Pack", value=5)
+freebie4 = company2.give_freebie(dev3, item_name="Laptop Bag", value=50)
 
-    db.session.add_all([freebie1, freebie2])
-    db.session.commit()
+# Add the freebies and commit
+session.add_all([freebie1, freebie2, freebie3, freebie4])
+session.commit()
 
-    print("Database seeded successfully.")
+print("Seeded the database with sample Devs, Companies, and Freebies!")
